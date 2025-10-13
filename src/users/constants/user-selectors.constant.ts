@@ -1,0 +1,35 @@
+export const USER_PUBLIC_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  avatar: true,
+  phone: true,
+  role: true,
+  status: true,
+  position: true,
+  departmentId: true,
+  managerId: true,
+  isManager: true,
+  isDepartmentHead: true,
+  managedDepartmentId: true,
+  sortOrder: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+} as const;
+
+export const USER_BASIC_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  avatar: true,
+  phone: true,
+  role: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+} as const;
+

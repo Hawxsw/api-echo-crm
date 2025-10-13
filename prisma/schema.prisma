@@ -1,0 +1,495 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  MANAGE
+}
+
+enum PermissionResource {
+  USERS
+  ROLES
+  KANBAN_BOARDS
+  KANBAN_CARDS
+  CHAT
+  WHATSAPP
+  REPORTS
+  SALES_PIPELINE
+  SALES_OPPORTUNITIES
+  ALL
+}
+
+enum KanbanCardPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WhatsAppMessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum SalesOpportunityPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SalesActivityType {
+  CALL
+  EMAIL
+  MEETING
+  TASK
+  NOTE
+}
+
+enum SalesActivityStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  MESSAGE
+  TASK_ASSIGNED
+  TASK_COMMENT
+  TASK_DUE_SOON
+  WHATSAPP_MESSAGE
+  SALES_ASSIGNED
+  SALES_COMMENT
+  MENTION
+  SYSTEM
+}
+
+model Role {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isSystem    Boolean   @default(false) // Para roles padrão como Super Admin
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  users       User[]
+  permissions Permission[]
+  
+  @@map("roles")
+}
+
+model Permission {
+  id          String              @id @default(uuid())
+  roleId      String
+  action      PermissionAction
+  resource    PermissionResource
+  conditions  Json?               // Condições adicionais (ex: apenas seus próprios recursos)
+  createdAt   DateTime            @default(now())
+  
+  role        Role                @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, action, resource])
+  @@index([roleId])
+  @@map("permissions")
+}
+
+model Department {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  parentId    String?   // Para criar hierarquia de departamentos
+  level       Int       @default(0) // Nível na hierarquia (0 = raiz)
+  position    Int       @default(0) // Posição horizontal no organograma
+  isActive    Boolean   @default(true)
+  color       String?   // Cor do departamento no organograma
+  icon        String?   // Ícone do departamento
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  parent      Department? @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Department[] @relation("DepartmentHierarchy")
+  users       User[]
+  managers    User[]      @relation("DepartmentManagers")
+
+  @@index([parentId])
+  @@index([level])
+  @@map("departments")
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  password      String
+  firstName     String
+  lastName      String
+  avatar        String?
+  phone         String?
+  roleId        String?
+  status        UserStatus  @default(ACTIVE)
+  departmentId  String?
+  managerId     String?     // Supervisor/gerente do usuário
+  position      String?     // Cargo/função do usuário
+  isManager     Boolean     @default(false) // Se é gerente/supervisor
+  isDepartmentHead Boolean  @default(false) // Se é chefe do departamento
+  managedDepartmentId String? // Departamento que gerencia (se for chefe)
+  sortOrder     Int?        // Ordem de exibição no organograma
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  lastLoginAt   DateTime?
+
+  role          Role?       @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  department    Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager       User?       @relation("UserHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  subordinates  User[]      @relation("UserHierarchy")
+  managedDepartment Department? @relation("DepartmentManagers", fields: [managedDepartmentId], references: [id], onDelete: SetNull)
+  
+  sentMessages       Message[]        @relation("SentMessages")
+  chatParticipants   ChatParticipant[]
+  assignedCards      KanbanCard[]     @relation("AssignedCards")
+  createdCards       KanbanCard[]     @relation("CreatedCards")
+  cardComments       CardComment[]
+  cardActivities     CardActivity[]
+  whatsappConversations WhatsAppConversation[]
+  createdOpportunities SalesOpportunity[] @relation("CreatedOpportunities")
+  assignedOpportunities SalesOpportunity[] @relation("AssignedOpportunities")
+  salesComments      SalesComment[] @relation("SalesComments")
+  salesActivities    SalesActivity[] @relation("SalesActivities")
+  notifications      Notification[]
+  
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([managerId])
+  @@index([managedDepartmentId])
+  @@map("users")
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  name        String?
+  isGroup     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  participants ChatParticipant[]
+  messages     Message[]
+  
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id          String    @id @default(uuid())
+  chatId      String
+  userId      String
+  joinedAt    DateTime  @default(now())
+  lastReadAt  DateTime?
+  
+  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([chatId, userId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id          String    @id @default(uuid())
+  content     String
+  chatId      String
+  senderId    String
+  isEdited    Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  @@index([chatId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model WhatsAppConversation {
+  id            String    @id @default(uuid())
+  clientName    String
+  clientPhone   String    @unique
+  assignedToId  String?
+  isActive      Boolean   @default(true)
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  assignedTo    User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  messages      WhatsAppMessage[]
+  
+  @@index([assignedToId])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppMessage {
+  id              String                  @id @default(uuid())
+  conversationId  String
+  content         String
+  isFromClient    Boolean                 @default(true)
+  status          WhatsAppMessageStatus   @default(SENT)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  
+  conversation    WhatsAppConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@index([conversationId])
+  @@map("whatsapp_messages")
+}
+
+model KanbanBoard {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  columns     KanbanColumn[]
+  
+  @@map("kanban_boards")
+}
+
+model KanbanColumn {
+  id          String    @id @default(uuid())
+  name        String
+  position    Int
+  boardId     String
+  color       String?
+  limit       Int?      // WIP limit
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  board       KanbanBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards       KanbanCard[]
+  
+  @@unique([boardId, position])
+  @@index([boardId])
+  @@map("kanban_columns")
+}
+
+model KanbanCard {
+  id            String              @id @default(uuid())
+  title         String
+  description   String?
+  columnId      String
+  position      Int
+  priority      KanbanCardPriority  @default(MEDIUM)
+  dueDate       DateTime?
+  createdById   String
+  assignedToId  String?
+  tags          String[]            @default([])
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  column        KanbanColumn        @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  createdBy     User                @relation("CreatedCards", fields: [createdById], references: [id], onDelete: Cascade)
+  assignedTo    User?               @relation("AssignedCards", fields: [assignedToId], references: [id], onDelete: SetNull)
+  
+  comments      CardComment[]
+  attachments   CardAttachment[]
+  activities    CardActivity[]
+  
+  @@unique([columnId, position])
+  @@index([columnId])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@map("kanban_cards")
+}
+
+model CardComment {
+  id          String    @id @default(uuid())
+  content     String
+  cardId      String
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  card        KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@index([userId])
+  @@map("card_comments")
+}
+
+model CardAttachment {
+  id          String    @id @default(uuid())
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  cardId      String
+  createdAt   DateTime  @default(now())
+  
+  card        KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@map("card_attachments")
+}
+
+model CardActivity {
+  id          String    @id @default(uuid())
+  action      String    // "created", "moved", "assigned", "commented", etc.
+  description String
+  cardId      String
+  userId      String
+  metadata    Json?     // Additional data about the activity
+  createdAt   DateTime  @default(now())
+  
+  card        KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([cardId])
+  @@index([userId])
+  @@map("card_activities")
+}
+
+// ============ SALES PIPELINE MODELS ============
+
+model SalesPipeline {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  stages      SalesStage[]
+  
+  @@map("sales_pipelines")
+}
+
+model SalesStage {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  position    Int
+  color       String    @default("#3B82F6")
+  pipelineId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  pipeline    SalesPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  opportunities SalesOpportunity[]
+  
+  @@unique([pipelineId, position])
+  @@index([pipelineId])
+  @@map("sales_stages")
+}
+
+model SalesOpportunity {
+  id            String                  @id @default(uuid())
+  title         String
+  description   String?
+  company       String
+  contact       String
+  email         String?
+  phone         String?
+  value         Decimal                 @default(0)
+  stageId       String
+  priority      SalesOpportunityPriority @default(MEDIUM)
+  createdById   String
+  assignedToId  String?
+  tags          String[]                @default([])
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  
+  stage         SalesStage              @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  createdBy     User                    @relation("CreatedOpportunities", fields: [createdById], references: [id], onDelete: Cascade)
+  assignedTo    User?                   @relation("AssignedOpportunities", fields: [assignedToId], references: [id], onDelete: SetNull)
+  
+  comments      SalesComment[]
+  activities    SalesActivity[]
+  
+  @@index([stageId])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@map("sales_opportunities")
+}
+
+model SalesComment {
+  id              String    @id @default(uuid())
+  content         String
+  isPinned        Boolean   @default(false)
+  opportunityId   String
+  userId          String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  opportunity     SalesOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user            User             @relation("SalesComments", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([opportunityId])
+  @@index([userId])
+  @@map("sales_comments")
+}
+
+model SalesActivity {
+  id              String              @id @default(uuid())
+  type            SalesActivityType
+  title           String
+  description     String?
+  scheduledDate   DateTime
+  scheduledTime   String              // HH:mm format
+  completedDate   DateTime?
+  completedTime   String?             // HH:mm format
+  status          SalesActivityStatus @default(SCHEDULED)
+  opportunityId   String
+  assignedToId    String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  opportunity     SalesOpportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  assignedTo      User                @relation("SalesActivities", fields: [assignedToId], references: [id], onDelete: Cascade)
+  
+  @@index([opportunityId])
+  @@index([assignedToId])
+  @@map("sales_activities")
+}
+
+model Notification {
+  id          String            @id @default(uuid())
+  type        NotificationType
+  title       String
+  message     String
+  userId      String
+  isRead      Boolean           @default(false)
+  metadata    Json?             // Additional data (cardId, chatId, etc)
+  actionUrl   String?           // URL to navigate when clicked
+  createdAt   DateTime          @default(now())
+  readAt      DateTime?
+  
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
