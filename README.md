@@ -157,7 +157,7 @@ src/
 1. **Clone o repositório**
 
 ```bash
-git clone https://github.com/seu-usuario/echo-crm.git
+git clone https://github.com/Hawxsw/echo-crm.git
 cd echo-crm/api-echo-crm
 ```
 
@@ -440,10 +440,8 @@ Este projeto está sob a licença UNLICENSED - veja o arquivo LICENSE para detal
 
 ## 👤 Autor
 
-Seu Nome
-- Portfolio: [seu-portfolio.com](https://seu-portfolio.com)
-- LinkedIn: [seu-linkedin](https://linkedin.com/in/seu-perfil)
-- GitHub: [@seu-usuario](https://github.com/seu-usuario)
+Hawxsw
+- GitHub: [@Hawxsw](https://github.com/Hawxsw)
 
 ## 🙏 Agradecimentos
 
