@@ -9,7 +9,7 @@ export const createCorsConfig = (): CorsOptions => {
         'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:4200',
-        /\.vercel\.app$/,
+        /\.onrender\.com$/,
       ];
   
   return {
