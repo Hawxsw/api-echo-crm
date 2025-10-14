@@ -1,36 +1,44 @@
 import { z } from 'zod';
 
-/**
- * Schema para login
- */
 export const LoginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-/**
- * Schema para registro de novo usuário
- */
 export const RegisterSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
-  firstName: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
-  lastName: z.string().min(2, 'Sobrenome deve ter no mínimo 2 caracteres'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50),
   phone: z.string().optional(),
-  roleId: z.string().uuid('ID do role inválido').optional(),
+  roleId: z.string().uuid('Invalid role ID').optional(),
 });
 
-/**
- * Schema para resposta de autenticação
- */
+const UserProfileSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  firstName: z.string(),
+  lastName: z.string(),
+  role: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    permissions: z.array(z.object({
+      action: z.string(),
+      resource: z.string(),
+    })),
+  }).nullable(),
+});
+
 export const AuthResponseSchema = z.object({
   access_token: z.string(),
-  user: z.object({
-    id: z.string(),
-    email: z.string(),
-    firstName: z.string(),
-    lastName: z.string(),
-    role: z.string(),
-  }),
+  user: UserProfileSchema,
 });
+
+export type LoginInput = z.infer<typeof LoginSchema>;
+export type RegisterInput = z.infer<typeof RegisterSchema>;
+export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+export type UserProfile = z.infer<typeof UserProfileSchema>;
 

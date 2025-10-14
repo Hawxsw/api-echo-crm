@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PasswordUtil } from '../common/utils/password.util';
 import { USER_PUBLIC_SELECT, USER_BASIC_SELECT } from './constants/user-selectors.constant';
+import { PaginatedResponse } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -15,27 +16,25 @@ export class UsersService {
 
     return this.prisma.user.create({
       data: {
-        ...createUserDto,
+        email: createUserDto.email,
         password: hashedPassword,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        phone: createUserDto.phone,
+        avatar: createUserDto.avatar,
+        roleId: createUserDto.roleId,
+        departmentId: createUserDto.departmentId,
+        managerId: createUserDto.managerId,
+        position: createUserDto.position,
       },
       select: USER_BASIC_SELECT,
     });
   }
 
-  private async ensureEmailIsUnique(email: string, excludeId?: string): Promise<void> {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser && existingUser.id !== excludeId) {
-      throw new ConflictException('Email já cadastrado');
-    }
-  }
-
-  async findAll(page = 1, limit = 10) {
+  async findAll(page: number, limit: number): Promise<PaginatedResponse<unknown>> {
     const skip = (page - 1) * limit;
 
-    const [users, total] = await Promise.all([
+    const [users, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         skip,
         take: limit,
@@ -63,7 +62,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('User not found');
     }
 
     return user;
@@ -83,21 +82,34 @@ export class UsersService {
     });
   }
 
-  private async ensureUserExists(id: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
+  async remove(id: string): Promise<{ message: string }> {
+    await this.ensureUserExists(id);
+    
+    await this.prisma.user.delete({ where: { id } });
+    
+    return { message: 'User removed successfully' };
+  }
+
+  private async ensureEmailIsUnique(email: string, excludeId?: string): Promise<void> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
     });
 
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+    if (existingUser && existingUser.id !== excludeId) {
+      throw new ConflictException('Email already registered');
     }
   }
 
-  async remove(id: string) {
-    await this.ensureUserExists(id);
-    await this.prisma.user.delete({ where: { id } });
-    
-    return { message: 'Usuário removido com sucesso' };
+  private async ensureUserExists(id: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
   }
 }
 

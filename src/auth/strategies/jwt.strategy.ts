@@ -1,53 +1,79 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export interface JwtPayload {
+interface JwtPayload {
   sub: string;
   email: string;
-  role: string;
+  role: unknown;
 }
+
+interface ValidatedUser {
+  id: string;
+  email: string;
+  role: {
+    id: string;
+    name: string;
+    permissions: Array<{
+      action: string;
+      resource: string;
+      conditions: unknown;
+    }>;
+  } | null;
+}
+
+const USER_VALIDATION_SELECT = {
+  id: true,
+  email: true,
+  status: true,
+  role: {
+    select: {
+      id: true,
+      name: true,
+      permissions: {
+        select: {
+          action: true,
+          resource: true,
+          conditions: true,
+        },
+      },
+    },
+  },
+} as const;
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private configService: ConfigService,
-    private prisma: PrismaService,
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+    
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET'),
-    });
+      secretOrKey: jwtSecret,
+    } as StrategyOptions);
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<ValidatedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        status: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-            permissions: {
-              select: {
-                action: true,
-                resource: true,
-                conditions: true,
-              },
-            },
-          },
-        },
-      },
+      select: USER_VALIDATION_SELECT,
     });
 
-    if (!user || user.status !== 'ACTIVE') {
-      throw new UnauthorizedException('Usuário não encontrado ou inativo');
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User is inactive');
     }
 
     return {

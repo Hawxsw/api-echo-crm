@@ -341,7 +341,7 @@ async function main() {
       {
         title: 'Implementar autenticação JWT',
         description: 'Criar sistema de autenticação com JWT e refresh tokens',
-        columnId: kanbanBoard.columns[1].id,
+        columnId: kanbanBoard.columns[1]!.id,
         position: 0,
         priority: 'HIGH',
         createdById: admin.id,
@@ -350,7 +350,7 @@ async function main() {
       {
         title: 'Criar dashboard administrativo',
         description: 'Dashboard com métricas e gráficos para administradores',
-        columnId: kanbanBoard.columns[0].id,
+        columnId: kanbanBoard.columns[0]!.id,
         position: 0,
         priority: 'MEDIUM',
         createdById: devManager.id,

@@ -1,5 +1,21 @@
+interface UserWithRole {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  role: {
+    id: string;
+    name: string;
+    permissions: Array<{
+      action: string;
+      resource: string;
+    }>;
+  } | null;
+}
+
 export class UserMapper {
-  static toPublicProfile(user: any) {
+  static toPublicProfile(user: UserWithRole) {
     return {
       id: user.id,
       email: user.email,
@@ -10,7 +26,7 @@ export class UserMapper {
     };
   }
 
-  static toAuthResponse(user: any, accessToken: string) {
+  static toAuthResponse(user: UserWithRole, accessToken: string) {
     return {
       access_token: accessToken,
       user: this.toPublicProfile(user),
@@ -18,7 +34,7 @@ export class UserMapper {
   }
 
   static excludePassword<T extends { password?: string }>(user: T): Omit<T, 'password'> {
-    const { password: _, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 }

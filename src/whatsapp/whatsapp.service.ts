@@ -232,7 +232,7 @@ export class WhatsappService {
     await this.prisma.whatsAppMessage.create({
       data: {
         conversationId,
-        content: randomResponse,
+        content: randomResponse || 'Obrigado pela mensagem!',
         isFromClient: false,
         status: 'DELIVERED',
       },

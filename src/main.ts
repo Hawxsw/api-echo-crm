@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { INestApplication } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module';
@@ -7,10 +8,10 @@ import { createLoggerConfig } from './config/logger.config';
 import { createSwaggerConfig, SWAGGER_SETUP_OPTIONS } from './config/swagger.config';
 import { createCorsConfig } from './config/cors.config';
 
-const API_PREFIX = 'api/v1';
-const DOCS_PATH = 'api/docs';
+const API_PREFIX = 'api/v1' as const;
+const DOCS_PATH = 'api/docs' as const;
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const env = validateEnv(process.env);
 
   const app = await NestFactory.create(AppModule, {
@@ -23,13 +24,13 @@ async function bootstrap() {
   await app.listen(env.PORT);
 }
 
-function setupMiddleware(app: any): void {
+function setupMiddleware(app: INestApplication): void {
   app.enableCors(createCorsConfig());
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(new ZodValidationPipe());
 }
 
-function setupSwagger(app: any): void {
+function setupSwagger(app: INestApplication): void {
   patchNestJsSwagger();
 
   const config = createSwaggerConfig();

@@ -9,15 +9,34 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PERMISSIONS_KEY, RequiredPermission } from '../decorators/permissions.decorator';
 import { PermissionAction, PermissionResource } from '@prisma/client';
 
+interface RequestUser {
+  id: string;
+}
+
+const USER_PERMISSIONS_SELECT = {
+  include: {
+    role: {
+      include: {
+        permissions: {
+          select: {
+            action: true,
+            resource: true,
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
-    private prisma: PrismaService,
+    private readonly reflector: Reflector,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<RequiredPermission[]>(
+    const requiredPermissions = this.reflector.getAllAndOverride<readonly RequiredPermission[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
@@ -26,62 +45,51 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<{ user?: RequestUser }>();
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('Usuário não autenticado');
+      throw new ForbiddenException('User not authenticated');
     }
 
     const userWithRole = await this.prisma.user.findUnique({
       where: { id: user.id },
-      include: {
-        role: {
-          include: {
-            permissions: true,
-          },
-        },
-      },
+      ...USER_PERMISSIONS_SELECT,
     });
 
-    if (!userWithRole || !userWithRole.role) {
-      throw new ForbiddenException('Usuário sem role atribuído');
+    if (!userWithRole?.role) {
+      throw new ForbiddenException('User has no assigned role');
     }
 
     const userPermissions = userWithRole.role.permissions;
 
-    // Verificar se tem permissão de MANAGE em ALL (super admin)
-    const isSuperAdmin = userPermissions.some(
-      p => p.action === PermissionAction.MANAGE && p.resource === PermissionResource.ALL
-    );
-
-    if (isSuperAdmin) {
+    if (this.isSuperAdmin(userPermissions)) {
       return true;
     }
 
-    // Verificar cada permissão necessária
-    const hasAllPermissions = requiredPermissions.every(required => {
-      return userPermissions.some(userPerm => {
-        // Verificar se tem permissão MANAGE no recurso específico
-        if (userPerm.action === PermissionAction.MANAGE && userPerm.resource === required.resource) {
-          return true;
-        }
-
-        // Verificar permissão específica
-        return (
-          userPerm.action === required.action &&
-          userPerm.resource === required.resource
-        );
-      });
-    });
-
-    if (!hasAllPermissions) {
-      throw new ForbiddenException(
-        'Você não possui permissões suficientes para realizar esta ação'
-      );
+    if (!this.hasRequiredPermissions(requiredPermissions, userPermissions)) {
+      throw new ForbiddenException('Insufficient permissions');
     }
 
     return true;
+  }
+
+  private isSuperAdmin(permissions: Array<{ action: PermissionAction; resource: PermissionResource }>): boolean {
+    return permissions.some(
+      p => p.action === PermissionAction.MANAGE && p.resource === PermissionResource.ALL
+    );
+  }
+
+  private hasRequiredPermissions(
+    required: readonly RequiredPermission[],
+    userPerms: Array<{ action: PermissionAction; resource: PermissionResource }>
+  ): boolean {
+    return required.every(req =>
+      userPerms.some(perm =>
+        (perm.action === PermissionAction.MANAGE && perm.resource === req.resource) ||
+        (perm.action === req.action && perm.resource === req.resource)
+      )
+    );
   }
 }
 

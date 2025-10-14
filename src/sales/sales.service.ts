@@ -37,8 +37,9 @@ export class SalesService {
         },
       });
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao criar pipeline: ${error.message}`,
+        `Error creating pipeline: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -68,8 +69,9 @@ export class SalesService {
         orderBy: { createdAt: 'desc' },
       });
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao buscar pipelines: ${error.message}`,
+        `Error fetching pipelines: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -107,8 +109,9 @@ export class SalesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao buscar pipeline: ${error.message}`,
+        `Error fetching pipeline: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -131,8 +134,9 @@ export class SalesService {
       if (error instanceof NotFoundException || error instanceof HttpException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao atualizar pipeline: ${error.message}`,
+        `Error updating pipeline: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -150,8 +154,9 @@ export class SalesService {
       if (error instanceof NotFoundException || error instanceof HttpException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao remover pipeline: ${error.message}`,
+        `Error removing pipeline: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -194,8 +199,9 @@ export class SalesService {
       if (error instanceof NotFoundException || error instanceof HttpException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao criar estágio: ${error.message}`,
+        `Error creating stage: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -210,8 +216,7 @@ export class SalesService {
       throw new NotFoundException('Estágio não encontrado');
     }
 
-    // Se a posição foi alterada, reorganizar
-    if (updateStageDto.position !== undefined && updateStageDto.position !== stage.position) {
+    if (updateStageDto.position && updateStageDto.position !== stage.position) {
       await this.moveStagePositions(stage.pipelineId, stage.position, updateStageDto.position);
     }
 
@@ -327,8 +332,9 @@ export class SalesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao criar oportunidade: ${error.message}`,
+        `Error creating opportunity: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -377,8 +383,9 @@ export class SalesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new HttpException(
-        `Erro ao buscar oportunidade: ${error.message}`,
+        `Error fetching opportunity: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }

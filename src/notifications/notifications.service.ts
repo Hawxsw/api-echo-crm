@@ -18,7 +18,8 @@ export class NotificationsService {
       this.logger.log(`Notification created: ${notification.id} for user ${createNotificationDto.userId}`);
       return notification;
     } catch (error) {
-      this.logger.error(`Error creating notification: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Error creating notification: ${message}`);
       throw error;
     }
   }

@@ -10,13 +10,18 @@ import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 
 interface ErrorResponse {
-  success: false;
-  statusCode: number;
-  timestamp: string;
-  path: string;
-  method: string;
-  message: any;
-  errorCode?: string;
+  readonly success: false;
+  readonly statusCode: number;
+  readonly timestamp: string;
+  readonly path: string;
+  readonly method: string;
+  readonly message: unknown;
+  readonly errorCode?: string;
+}
+
+interface HttpExceptionResponse {
+  message?: unknown;
+  error?: string;
 }
 
 @Catch()
@@ -69,10 +74,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       ...baseResponse,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
+      errorCode: 'UNKNOWN_ERROR',
     };
   }
 
-  private extractHttpExceptionDetails(exception: HttpException) {
+  private extractHttpExceptionDetails(exception: HttpException): Pick<ErrorResponse, 'statusCode' | 'message' | 'errorCode'> {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 
@@ -81,7 +87,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
-      const response = exceptionResponse as any;
+      const response = exceptionResponse as HttpExceptionResponse;
       return {
         statusCode: status,
         message: response.message || exceptionResponse,
@@ -92,7 +98,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return { statusCode: status, message: exceptionResponse };
   }
 
-  private extractZodErrorDetails(exception: ZodError) {
+  private extractZodErrorDetails(exception: ZodError): Pick<ErrorResponse, 'statusCode' | 'message' | 'errorCode'> {
     return {
       statusCode: HttpStatus.BAD_REQUEST,
       errorCode: 'VALIDATION_ERROR',
@@ -108,7 +114,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private logError(exception: unknown, request: Request, status: number): void {
-    const userId = (request as any).user?.id || 'anonymous';
+    const user = (request as unknown as { user?: { id?: string } }).user;
     const errorStack = exception instanceof Error ? exception.stack : String(exception);
 
     this.logger.error(`HTTP ${status} - ${request.method} ${request.url}`, {
@@ -116,7 +122,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       body: request.body,
       query: request.query,
       params: request.params,
-      user: userId,
+      user: user?.id || 'anonymous',
     });
   }
 }

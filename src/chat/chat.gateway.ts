@@ -72,7 +72,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const userChats = await this.chatService.findAllChats(userId);
       userChats.forEach(chat => client.join(`chat:${chat.id}`));
     } catch (error) {
-      this.logger.error(`Failed to join user chats: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to join user chats: ${message}`);
     }
   }
 
@@ -110,7 +111,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       return { event: 'messageSent', data: message };
     } catch (error) {
-      return { event: 'error', data: { message: error.message } };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { event: 'error', data: { message: errorMessage } };
     }
   }
 
@@ -139,7 +141,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       return { event: 'markedAsRead', data: { chatId: data.chatId } };
     } catch (error) {
-      return { event: 'error', data: { message: error.message } };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { event: 'error', data: { message: errorMessage } };
     }
   }
 }

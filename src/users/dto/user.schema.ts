@@ -1,45 +1,59 @@
 import { z } from 'zod';
+import { UserStatus } from '@prisma/client';
 
-/**
- * Schema para criar usuário
- */
 export const CreateUserSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
-  firstName: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
-  lastName: z.string().min(2, 'Sobrenome deve ter no mínimo 2 caracteres'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain uppercase letter')
+    .regex(/[a-z]/, 'Password must contain lowercase letter')
+    .regex(/[0-9]/, 'Password must contain number'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50),
   phone: z.string().optional(),
-  avatar: z.string().url().optional(),
-  roleId: z.string().uuid('ID do role inválido').optional(),
+  avatar: z.string().url('Invalid URL format').optional(),
+  roleId: z.string().uuid('Invalid role ID').optional(),
+  departmentId: z.string().uuid('Invalid department ID').optional(),
+  managerId: z.string().uuid('Invalid manager ID').optional(),
+  position: z.string().optional(),
 });
 
-/**
- * Schema para atualizar usuário
- */
 export const UpdateUserSchema = z.object({
-  email: z.string().email('Email inválido').optional(),
-  firstName: z.string().min(2).optional(),
-  lastName: z.string().min(2).optional(),
+  email: z.string().email('Invalid email format').optional(),
+  firstName: z.string().min(2).max(50).optional(),
+  lastName: z.string().min(2).max(50).optional(),
   phone: z.string().optional(),
-  avatar: z.string().url().optional(),
-  roleId: z.string().uuid('ID do role inválido').optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+  avatar: z.string().url('Invalid URL format').optional(),
+  roleId: z.string().uuid('Invalid role ID').optional(),
+  status: z.nativeEnum(UserStatus).optional(),
+  departmentId: z.string().uuid('Invalid department ID').optional(),
+  managerId: z.string().uuid('Invalid manager ID').optional(),
+  position: z.string().optional(),
+  isManager: z.boolean().optional(),
+  isDepartmentHead: z.boolean().optional(),
 });
 
-/**
- * Schema para resposta de usuário
- */
+const RoleSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
 export const UserResponseSchema = z.object({
-  id: z.string(),
-  email: z.string(),
+  id: z.string().uuid(),
+  email: z.string().email(),
   firstName: z.string(),
   lastName: z.string(),
   avatar: z.string().nullable(),
   phone: z.string().nullable(),
-  role: z.string(),
-  status: z.string(),
+  role: RoleSchema.nullable(),
+  status: z.nativeEnum(UserStatus),
+  position: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   lastLoginAt: z.date().nullable(),
 });
+
+export type CreateUserInput = z.infer<typeof CreateUserSchema>;
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+export type UserResponse = z.infer<typeof UserResponseSchema>;
 

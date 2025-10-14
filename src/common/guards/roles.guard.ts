@@ -2,13 +2,15 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
-/**
- * @deprecated Use PermissionsGuard instead. This guard is kept for backwards compatibility.
- * The new system uses dynamic roles with granular permissions.
- */
+interface UserWithRole {
+  role?: {
+    name?: string;
+  } | null;
+}
+
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
@@ -16,19 +18,18 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!requiredRoles) {
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
-    
-    // Check if user has a role assigned
-    if (!user.role || !user.role.name) {
+    const request = context.switchToHttp().getRequest<{ user?: UserWithRole }>();
+    const user = request.user;
+
+    if (!user?.role?.name) {
       return false;
     }
-    
-    // Check if user's role name matches any of the required roles
-    return requiredRoles.some((roleName) => user.role.name === roleName);
+
+    return requiredRoles.includes(user.role.name);
   }
 }
 

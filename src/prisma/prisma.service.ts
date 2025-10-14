@@ -1,37 +1,55 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  async onModuleInit() {
+  private readonly logger = new Logger(PrismaService.name);
+
+  async onModuleInit(): Promise<void> {
     await this.$connect();
+    this.logger.log('Database connection established');
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     await this.$disconnect();
+    this.logger.log('Database connection closed');
   }
 
-  /**
-   * Helper method to clean database (useful for testing)
-   */
-  async cleanDatabase() {
+  async cleanDatabase(): Promise<void> {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('Cannot clean database in production');
     }
 
-    const models = Reflect.ownKeys(this).filter(
-      (key) => key[0] !== '_' && key !== 'constructor',
-    );
+    const modelNames = [
+      'notification',
+      'salesActivity',
+      'salesComment',
+      'salesOpportunity',
+      'salesStage',
+      'salesPipeline',
+      'cardActivity',
+      'cardAttachment',
+      'cardComment',
+      'kanbanCard',
+      'kanbanColumn',
+      'kanbanBoard',
+      'whatsAppMessage',
+      'whatsAppConversation',
+      'message',
+      'chatParticipant',
+      'chat',
+      'user',
+      'permission',
+      'role',
+      'department',
+    ];
 
-    return Promise.all(
-      models.map((modelKey) => {
-        const model = this[modelKey as keyof this];
-        if (model && typeof model === 'object' && 'deleteMany' in model) {
-          return (model as any).deleteMany();
-        }
-        return Promise.resolve();
-      }),
-    );
+    for (const modelName of modelNames) {
+      const model = this[modelName as keyof this];
+      if (model && typeof model === 'object' && 'deleteMany' in model) {
+        await (model as { deleteMany: () => Promise<unknown> }).deleteMany();
+      }
+    }
   }
 }
 

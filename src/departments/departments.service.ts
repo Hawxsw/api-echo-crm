@@ -17,7 +17,7 @@ export class DepartmentsService {
 
     const level = await this.calculateDepartmentLevel(parentId);
 
-    if (position !== undefined && parentId) {
+    if (position && parentId) {
       await this.adjustSiblingsPositions(parentId, position);
     }
 
@@ -219,9 +219,9 @@ export class DepartmentsService {
   async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<DepartmentResponseDto> {
     await this.ensureDepartmentExists(id);
 
-    if (updateDepartmentDto.parentId !== undefined) {
+    if ('parentId' in updateDepartmentDto) {
       return this.moveDepartment(id, {
-        newParentId: updateDepartmentDto.parentId,
+        newParentId: updateDepartmentDto.parentId || null,
         newPosition: updateDepartmentDto.position,
       });
     }

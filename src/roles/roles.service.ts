@@ -19,7 +19,7 @@ export class RolesService {
           create: createRoleDto.permissions.map((permission) => ({
             action: permission.action,
             resource: permission.resource,
-            conditions: permission.conditions ?? undefined,
+            conditions: permission.conditions,
           })),
         },
       },
@@ -122,7 +122,7 @@ export class RolesService {
         create: updateRoleDto.permissions.map((permission) => ({
           action: permission.action,
           resource: permission.resource,
-          conditions: permission.conditions ?? undefined,
+          conditions: permission.conditions,
         })),
       };
     }
@@ -290,7 +290,7 @@ export class RolesService {
       isSystem: role.isSystem,
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,
-      permissions: role.permissions.map(p => ({
+      permissions: role.permissions.map((p: { action: string; resource: string; conditions: unknown }) => ({
         action: p.action,
         resource: p.resource,
         conditions: p.conditions,

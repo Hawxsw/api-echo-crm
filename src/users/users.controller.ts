@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -26,10 +28,10 @@ export class UsersController {
 
   @Post()
   @Roles('Super Admin', 'Gerente')
-  @ApiOperation({ summary: 'Criar novo usuário' })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso', type: UserResponseDto })
-  @ApiResponse({ status: 409, description: 'Email já cadastrado' })
-  create(
+  @ApiOperation({ summary: 'Create new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully', type: UserResponseDto })
+  @ApiResponse({ status: 409, description: 'Email already registered' })
+  async create(
     @Body() createUserDto: CreateUserDto,
     @CurrentUser('id') userId: string,
   ) {
@@ -37,32 +39,28 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os usuários' })
+  @ApiOperation({ summary: 'List all users' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({ status: 200, description: 'Lista de usuários retornada com sucesso' })
-  findAll(
-    @Query() pagination: PaginationDto,
-  ) {
+  @ApiResponse({ status: 200, description: 'Users list retrieved successfully' })
+  async findAll(@Query() pagination: PaginationDto) {
     return this.usersService.findAll(pagination.page, pagination.limit);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar usuário por ID' })
-  @ApiResponse({ status: 200, description: 'Usuário encontrado', type: UserResponseDto })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-  findOne(
-    @Param('id') id: string,
-  ) {
+  @ApiOperation({ summary: 'Find user by ID' })
+  @ApiResponse({ status: 200, description: 'User found', type: UserResponseDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   @Roles('Super Admin', 'Gerente')
-  @ApiOperation({ summary: 'Atualizar usuário' })
-  @ApiResponse({ status: 200, description: 'Usuário atualizado com sucesso', type: UserResponseDto })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-  update(
+  @ApiOperation({ summary: 'Update user' })
+  @ApiResponse({ status: 200, description: 'User updated successfully', type: UserResponseDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
@@ -71,13 +69,12 @@ export class UsersController {
 
   @Delete(':id')
   @Roles('Super Admin')
-  @ApiOperation({ summary: 'Remover usuário' })
-  @ApiResponse({ status: 200, description: 'Usuário removido com sucesso' })
-  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-  remove(
-    @Param('id') id: string,
-  ) {
-    return this.usersService.remove(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove user' })
+  @ApiResponse({ status: 204, description: 'User removed successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.usersService.remove(id);
   }
 }
 
