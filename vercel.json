@@ -1,12 +1,15 @@
 {
   "version": 2,
+  "buildCommand": "pnpm run vercel-build",
+  "installCommand": "pnpm install",
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "dist/main.js": {
-      "maxDuration": 30
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  }
+  ]
 }
 
