@@ -39,9 +39,11 @@ async function createApp() {
   return app;
 }
 
-module.exports = async function handler(req, res) {
+module.exports = async (req, res) => {
   const app = await createApp();
   const expressApp = app.getHttpAdapter().getInstance();
   return expressApp(req, res);
 };
+
+module.exports.default = module.exports;
 
