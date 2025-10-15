@@ -11,6 +11,9 @@ import { KanbanModule } from './kanban/kanban.module';
 import { RolesModule } from './roles/roles.module';
 import { SalesModule } from './sales/sales.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SettingsModule } from './settings/settings.module';
+import { FeedbackModule } from './feedback/feedback.module';
+import { SupportModule } from './support/support.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -32,6 +35,9 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     KanbanModule,
     SalesModule,
     NotificationsModule,
+    SettingsModule,
+    FeedbackModule,
+    SupportModule,
   ],
   providers: [
     {
