@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Controller, Get } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
@@ -17,6 +17,14 @@ import { SupportModule } from './support/support.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+
+@Controller()
+export class AppController {
+  @Get()
+  getHello() {
+    return { message: 'API Echo CRM is running!', timestamp: new Date().toISOString() };
+  }
+}
 
 @Module({
   imports: [
@@ -39,6 +47,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     FeedbackModule,
     SupportModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
