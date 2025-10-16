@@ -63,10 +63,10 @@ USER nestjs
 # Expor porta
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Health check simples
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8000/api/v1/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Comando de inicialização
-CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main"]
+# Comando de inicialização com debug
+CMD ["sh", "-c", "echo 'Starting migrations...' && pnpm prisma migrate deploy && echo 'Migrations completed, starting app...' && node dist/main"]
 
