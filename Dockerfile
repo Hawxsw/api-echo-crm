@@ -39,6 +39,9 @@ COPY package.json pnpm-lock.yaml ./
 # Instalar dependências de produção
 RUN pnpm install --prod --frozen-lockfile
 
+# Adicionar Prisma CLI para migrations e generate
+RUN pnpm add -D prisma
+
 # Copiar arquivos necessários do builder
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/dist ./dist
