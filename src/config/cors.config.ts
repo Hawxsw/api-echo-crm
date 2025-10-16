@@ -2,6 +2,8 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 
 export const createCorsConfig = (): CorsOptions => {
   const originEnv = process.env.CORS_ORIGIN;
+  
+  console.log('CORS_ORIGIN env var:', originEnv);
     
   const allowedOrigins = originEnv 
     ? originEnv.split(',').map(o => o.trim())
@@ -12,26 +14,29 @@ export const createCorsConfig = (): CorsOptions => {
         /\.onrender\.com$/,
       ];
   
+  console.log('Allowed origins:', allowedOrigins);
+  
   return {
-    origin: (origin, callback) => {
-      if (!origin) {
-        return callback(null, true);
-      }
+    origin: true, // Temporariamente permitir todas as origens para debug
+    // origin: (origin, callback) => {
+    //   if (!origin) {
+    //     return callback(null, true);
+    //   }
 
-      const isAllowed = allowedOrigins.some((allowedOrigin) => {
-        if (typeof allowedOrigin === 'string') {
-          return allowedOrigin === origin;
-        }
-        return allowedOrigin.test(origin);
-      });
+    //   const isAllowed = allowedOrigins.some((allowedOrigin) => {
+    //     if (typeof allowedOrigin === 'string') {
+    //       return allowedOrigin === origin;
+    //     }
+    //     return allowedOrigin.test(origin);
+    //   });
 
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn(`CORS: Blocked origin ${origin}`);
-        callback(null, false);
-      }
-    },
+    //   if (isAllowed) {
+    //     callback(null, true);
+    //   } else {
+    //     console.warn(`CORS: Blocked origin ${origin}`);
+    //     callback(null, false);
+    //   }
+    // },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
