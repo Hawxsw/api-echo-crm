@@ -12,16 +12,24 @@ const API_PREFIX = 'api/v1' as const;
 const DOCS_PATH = 'api/docs' as const;
 
 async function bootstrap(): Promise<void> {
+  console.log('🚀 Starting application...');
+  
   const env = validateEnv(process.env);
+  console.log('✅ Environment validated');
 
   const app = await NestFactory.create(AppModule, {
     logger: createLoggerConfig(env),
   });
+  console.log('✅ App created');
 
   setupMiddleware(app);
+  console.log('✅ Middleware setup');
+  
   setupSwagger(app);
+  console.log('✅ Swagger setup');
 
   await app.listen(env.PORT);
+  console.log(`🚀 Application is running on port ${env.PORT}`);
 }
 
 function setupMiddleware(app: INestApplication): void {
