@@ -41,7 +41,6 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Copiar arquivos necessários do builder
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/dist ./dist
 
 # Configurar variáveis de ambiente
@@ -49,6 +48,9 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV NODE_OPTIONS=--max-old-space-size=512
 ENV PRISMA_CLI_BINARY_TARGETS=native,rhel-openssl-1.0.x
+
+# Gerar cliente Prisma na imagem de produção
+RUN pnpm prisma generate
 
 # Criar usuário não-root para segurança
 RUN addgroup -g 1001 -S nodejs
