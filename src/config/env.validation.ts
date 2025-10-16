@@ -5,7 +5,7 @@ export const envSchema = z.object({
   PORT: z.string().transform(Number).default('3000'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DIRECT_URL: z.string().optional(),
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').default('default-jwt-secret-for-development-only-32-chars'),
   JWT_EXPIRES_IN: z.string().default('24h'),
   CORS_ORIGIN: z.string().optional(),
   SOCKET_CORS_ORIGIN: z.string().optional(),

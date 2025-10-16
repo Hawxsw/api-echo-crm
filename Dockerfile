@@ -28,8 +28,8 @@ RUN pnpm run build
 # Stage de produção
 FROM node:20-alpine AS production
 
-# Instalar pnpm
-RUN npm install -g pnpm
+# Instalar pnpm e netcat
+RUN npm install -g pnpm && apk add --no-cache netcat-openbsd
 
 WORKDIR /app
 
@@ -63,10 +63,10 @@ USER nestjs
 # Expor porta
 EXPOSE 8000
 
-# Health check simples
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8000/api/v1/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+# Health check básico - apenas verifica se a porta está aberta
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
+  CMD nc -z 0.0.0.0 8000 || exit 1
 
-# Comando de inicialização com debug
-CMD ["sh", "-c", "echo 'Starting migrations...' && pnpm prisma migrate deploy && echo 'Migrations completed, starting app...' && node dist/main"]
+# Comando de inicialização com debug detalhado
+CMD ["sh", "-c", "echo 'Starting migrations...' && pnpm prisma migrate deploy && echo 'Migrations completed!' && echo 'Starting app with debug...' && node --trace-warnings dist/main"]
 

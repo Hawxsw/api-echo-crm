@@ -28,8 +28,8 @@ async function bootstrap(): Promise<void> {
   setupSwagger(app);
   console.log('✅ Swagger setup');
 
-  await app.listen(env.PORT);
-  console.log(`🚀 Application is running on port ${env.PORT}`);
+  await app.listen(env.PORT, '0.0.0.0');
+  console.log(`🚀 Application is running on 0.0.0.0:${env.PORT}`);
 }
 
 function setupMiddleware(app: INestApplication): void {
