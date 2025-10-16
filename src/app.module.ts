@@ -24,6 +24,17 @@ export class AppController {
   getHello() {
     return { message: 'API Echo CRM is running!', timestamp: new Date().toISOString() };
   }
+
+  @Get('health')
+  getHealth() {
+    return { 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      version: process.env.npm_package_version || '1.0.0'
+    };
+  }
 }
 
 @Module({

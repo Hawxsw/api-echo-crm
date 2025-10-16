@@ -1,32 +1,70 @@
-FROM node:20-alpine AS builder
+# Multi-stage build para otimização
+FROM node:20-alpine AS base
+
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copiar arquivos de dependências
+COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma/
 
-RUN npm ci
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
 
+# Stage de build
+FROM base AS builder
+
+# Copiar código fonte
 COPY . .
 
-RUN npx prisma generate
+# Gerar cliente Prisma
+RUN pnpm prisma generate
 
-RUN npm run build
+# Build da aplicação
+RUN pnpm run build
 
+# Stage de produção
 FROM node:20-alpine AS production
+
+# Instalar pnpm
+RUN npm install -g pnpm
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copiar package.json e pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
 
-RUN npm ci --only=production
+# Instalar apenas dependências de produção
+RUN pnpm install --prod --frozen-lockfile
 
+# Copiar arquivos necessários do builder
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
 COPY --from=builder /app/dist ./dist
 
+# Configurar variáveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV NODE_OPTIONS=--max-old-space-size=512
+ENV PRISMA_CLI_BINARY_TARGETS=native,rhel-openssl-1.0.x
+
+# Criar usuário não-root para segurança
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+
+# Mudar ownership dos arquivos
+RUN chown -R nestjs:nodejs /app
+USER nestjs
+
+# Expor porta
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Comando de inicialização
+CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main"]
 
