@@ -1,23 +1,19 @@
 import { z } from 'nestjs-zod/z';
 
 export const UpdateSettingsSchema = z.object({
-  // Notification settings
   emailNotifications: z.boolean().optional(),
   pushNotifications: z.boolean().optional(),
   smsNotifications: z.boolean().optional(),
   marketingNotifications: z.boolean().optional(),
   
-  // Security settings
   twoFactorAuth: z.boolean().optional(),
   sessionTimeout: z.number().int().min(5).max(480).optional(),
   passwordPolicy: z.enum(['low', 'medium', 'high', 'strict']).optional(),
   
-  // Appearance settings
   theme: z.enum(['light', 'dark', 'auto']).optional(),
   language: z.enum(['pt-BR', 'en-US', 'es-ES']).optional(),
   timezone: z.string().optional(),
   
-  // System settings
   autoSave: z.boolean().optional(),
   dataRetention: z.number().int().min(30).max(730).optional(),
   backupFrequency: z.enum(['daily', 'weekly', 'monthly']).optional(),

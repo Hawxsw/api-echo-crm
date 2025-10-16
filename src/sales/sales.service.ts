@@ -24,8 +24,6 @@ import {
 export class SalesService {
   constructor(private prisma: PrismaService) {}
 
-  // ============ PIPELINE METHODS ============
-
   async createPipeline(createPipelineDto: CreatePipelineDto) {
     try {
       return await this.prisma.salesPipeline.create({
@@ -162,13 +160,10 @@ export class SalesService {
     }
   }
 
-  // ============ STAGE METHODS ============
-
   async createStage(pipelineId: string, createStageDto: CreateStageDto) {
     try {
       const pipeline = await this.findOnePipeline(pipelineId);
       
-      // Verificar se a posição já existe
       const existingStage = await this.prisma.salesStage.findFirst({
         where: {
           pipelineId,
@@ -177,7 +172,6 @@ export class SalesService {
       });
 
       if (existingStage) {
-        // Mover estágios existentes
         await this.prisma.salesStage.updateMany({
           where: {
             pipelineId,
@@ -245,7 +239,6 @@ export class SalesService {
 
   private async moveStagePositions(pipelineId: string, oldPosition: number, newPosition: number) {
     if (oldPosition < newPosition) {
-      // Movendo para direita - diminuir posições dos estágios no meio
       await this.prisma.salesStage.updateMany({
         where: {
           pipelineId,
@@ -256,7 +249,6 @@ export class SalesService {
         },
       });
     } else {
-      // Movendo para esquerda - aumentar posições dos estágios no meio
       await this.prisma.salesStage.updateMany({
         where: {
           pipelineId,
@@ -285,7 +277,6 @@ export class SalesService {
       throw new BadRequestException('Não é possível excluir estágio com oportunidades');
     }
 
-    // Ajustar posições dos estágios restantes
     await this.prisma.salesStage.updateMany({
       where: {
         pipelineId: stage.pipelineId,
@@ -300,8 +291,6 @@ export class SalesService {
       where: { id },
     });
   }
-
-  // ============ OPPORTUNITY METHODS ============
 
   async createOpportunity(createOpportunityDto: CreateOpportunityDto, userId: string) {
     try {
@@ -445,8 +434,6 @@ export class SalesService {
     });
   }
 
-  // ============ COMMENT METHODS ============
-
   async createComment(opportunityId: string, createCommentDto: CreateCommentDto, userId: string) {
     const opportunity = await this.findOneOpportunity(opportunityId);
 
@@ -497,8 +484,6 @@ export class SalesService {
       where: { id },
     });
   }
-
-  // ============ ACTIVITY METHODS ============
 
   async createActivity(opportunityId: string, createActivityDto: CreateActivityDto, userId: string) {
     const opportunity = await this.findOneOpportunity(opportunityId);

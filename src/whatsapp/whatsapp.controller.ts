@@ -20,7 +20,6 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
-// UserRole enum removido - usar nomes de roles como strings
 
 @ApiTags('whatsapp')
 @ApiBearerAuth()

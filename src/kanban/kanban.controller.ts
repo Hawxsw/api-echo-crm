@@ -34,7 +34,6 @@ import { PermissionAction, PermissionResource } from '@prisma/client';
 export class KanbanController {
   constructor(private readonly kanbanService: KanbanService) {}
 
-  // ============ BOARD ENDPOINTS ============
   @Post('boards')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.KANBAN_BOARDS })
   @ApiOperation({ summary: 'Criar novo board' })
@@ -85,7 +84,6 @@ export class KanbanController {
     return this.kanbanService.removeBoard(id);
   }
 
-  // ============ COLUMN ENDPOINTS ============
   @Post('boards/:boardId/columns')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.KANBAN_BOARDS })
   @ApiOperation({ summary: 'Criar nova coluna' })
@@ -129,7 +127,6 @@ export class KanbanController {
     return this.kanbanService.removeColumn(id);
   }
 
-  // ============ CARD ENDPOINTS ============
   @Post('columns/:columnId/cards')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.KANBAN_CARDS })
   @ApiOperation({ summary: 'Criar novo card' })
@@ -186,7 +183,6 @@ export class KanbanController {
     return this.kanbanService.removeCard(id);
   }
 
-  // ============ COMMENT ENDPOINTS ============
   @Post('cards/:cardId/comments')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.KANBAN_CARDS })
   @ApiOperation({ summary: 'Criar comentário no card' })

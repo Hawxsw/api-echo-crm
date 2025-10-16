@@ -1,8 +1,5 @@
 import { z } from 'zod';
 
-/**
- * Schema para criar departamento
- */
 export const CreateDepartmentSchema = z.object({
   name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(100),
   description: z.string().max(500).optional(),
@@ -12,9 +9,6 @@ export const CreateDepartmentSchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
-/**
- * Schema para atualizar departamento
- */
 export const UpdateDepartmentSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   description: z.string().max(500).optional(),
@@ -25,21 +19,15 @@ export const UpdateDepartmentSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-/**
- * Schema para adicionar colaborador ao departamento
- */
 export const AddUserToDepartmentSchema = z.object({
   userId: z.string().uuid('ID do usuário inválido'),
   departmentId: z.string().uuid('ID do departamento inválido'),
-  position: z.string().optional(), // Cargo/função
+  position: z.string().optional(),
   isManager: z.boolean().optional(),
   isDepartmentHead: z.boolean().optional(),
-  managerId: z.string().uuid().optional(), // Supervisor
+  managerId: z.string().uuid().optional(),
 });
 
-/**
- * Schema para mover departamento na hierarquia
- */
 export const MoveDepartmentSchema = z.object({
   newParentId: z.string().uuid().nullable(),
   newPosition: z.number().int().min(0).optional(),

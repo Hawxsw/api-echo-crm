@@ -33,7 +33,6 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
-  // Ticket endpoints
   @Post('tickets')
   @ApiOperation({ summary: 'Create new support ticket' })
   @ApiResponse({ status: 201, description: 'Ticket created successfully', type: TicketResponseDto })
@@ -94,7 +93,6 @@ export class SupportController {
     await this.supportService.removeTicket(id, userId);
   }
 
-  // FAQ endpoints
   @Post('faqs')
   @Roles('Super Admin', 'Gerente')
   @ApiOperation({ summary: 'Create new FAQ' })

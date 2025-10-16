@@ -92,7 +92,6 @@ export class NotificationsService {
     return { success: true, count: result.count };
   }
 
-  // Helper methods for creating specific notification types
   async createTaskAssignedNotification(userId: string, cardTitle: string, cardId: string, boardId: string) {
     return this.create({
       type: NotificationType.TASK_ASSIGNED,

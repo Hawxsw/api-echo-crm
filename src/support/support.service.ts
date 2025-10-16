@@ -7,7 +7,6 @@ import { PaginatedResponse } from '../common/dto/pagination.dto';
 export class SupportService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Ticket methods
   async createTicket(createTicketDto: CreateTicketDto, userId: string) {
     return this.prisma.supportTicket.create({
       data: {
@@ -95,7 +94,6 @@ export class SupportService {
     return { message: 'Support ticket removed successfully' };
   }
 
-  // FAQ methods
   async createFAQ(createFAQDto: CreateFAQDto) {
     return this.prisma.fAQ.create({
       data: {
@@ -152,7 +150,6 @@ export class SupportService {
       throw new NotFoundException('FAQ not found');
     }
 
-    // Increment views
     await this.prisma.fAQ.update({
       where: { id },
       data: { views: { increment: 1 } },

@@ -20,7 +20,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   server: Server;
 
   private readonly logger = new Logger(NotificationsGateway.name);
-  private userSockets = new Map<string, string>(); // userId -> socketId
+  private userSockets = new Map<string, string>();
 
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
@@ -49,18 +49,15 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     this.logger.log(`User ${userId} joined notifications room`);
   }
 
-  // Send notification to a specific user
   sendNotificationToUser(userId: string, notification: any) {
     this.server.to(`user:${userId}`).emit('newNotification', notification);
     this.logger.log(`Notification sent to user ${userId}`);
   }
 
-  // Send notification count update
   sendNotificationCount(userId: string, count: number) {
     this.server.to(`user:${userId}`).emit('notificationCount', { count });
   }
 
-  // Broadcast notification to multiple users
   sendNotificationToUsers(userIds: string[], notification: any) {
     userIds.forEach(userId => {
       this.sendNotificationToUser(userId, notification);

@@ -43,7 +43,6 @@ export class WhatsappService {
       },
     });
 
-    // Send welcome message from bot
     await this.sendAutoResponse(conversation.id);
 
     return conversation;
@@ -157,19 +156,16 @@ export class WhatsappService {
       },
     });
 
-    // Update conversation last message timestamp
     await this.prisma.whatsAppConversation.update({
       where: { id: sendMessageDto.conversationId },
       data: { lastMessageAt: new Date() },
     });
 
-    // If message is from client, trigger auto-response and send notification
     if (sendMessageDto.isFromClient) {
       setTimeout(() => {
         this.sendAutoResponse(sendMessageDto.conversationId);
-      }, 2000); // Simulate delay
+      }, 2000);
 
-      // Send notification to assigned user
       if (conversation.assignedToId) {
         const notification = await this.notificationsService.createWhatsAppNotification(
           conversation.assignedToId,
@@ -221,9 +217,6 @@ export class WhatsappService {
     };
   }
 
-  /**
-   * Send automatic response (mocked WhatsApp bot)
-   */
   private async sendAutoResponse(conversationId: string) {
     const randomResponse = this.autoResponses[
       Math.floor(Math.random() * this.autoResponses.length)

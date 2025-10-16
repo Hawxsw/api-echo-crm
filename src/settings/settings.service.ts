@@ -11,7 +11,6 @@ export class SettingsService {
       where: { userId },
     });
 
-    // Create default settings if they don't exist
     if (!settings) {
       settings = await this.prisma.userSettings.create({
         data: { userId },
@@ -22,7 +21,6 @@ export class SettingsService {
   }
 
   async updateSettings(userId: string, updateSettingsDto: UpdateSettingsDto) {
-    // Ensure settings exist
     await this.getSettings(userId);
 
     return this.prisma.userSettings.update({
@@ -32,12 +30,10 @@ export class SettingsService {
   }
 
   async resetSettings(userId: string) {
-    // Delete existing settings
     await this.prisma.userSettings.deleteMany({
       where: { userId },
     });
 
-    // Create new default settings
     return this.prisma.userSettings.create({
       data: { userId },
     });

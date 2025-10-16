@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `role` on the `users` table. All the data in the column will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "PermissionAction" AS ENUM ('CREATE', 'READ', 'UPDATE', 'DELETE', 'MANAGE');
 

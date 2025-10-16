@@ -8,7 +8,6 @@ const scryptAsync = promisify(scrypt);
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create default roles
   const superAdminRole = await prisma.role.upsert({
     where: { name: 'Super Admin' },
     update: {},
@@ -63,10 +62,8 @@ async function main() {
 
   console.log('✅ Roles created: Super Admin, Gerente, Colaborador');
 
-  // Create organizational structure
   console.log('🏢 Creating organizational structure...');
 
-  // Departamentos principais
   const techDept = await prisma.department.create({
     data: {
       name: 'Tecnologia da Informação',
@@ -115,7 +112,6 @@ async function main() {
     },
   });
 
-  // Subdepartamentos de TI
   const devDept = await prisma.department.create({
     data: {
       name: 'Desenvolvimento',
@@ -157,7 +153,6 @@ async function main() {
 
   console.log('✅ Organizational structure created');
 
-  // Create users
   const hashPassword = async (password: string): Promise<string> => {
     const salt = randomBytes(16).toString('hex');
     const hash = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -166,7 +161,6 @@ async function main() {
 
   const hashedPassword = await hashPassword('senha123');
 
-  // CEO/Admin
   const admin = await prisma.user.upsert({
     where: { email: 'admin@echotech.com' },
     update: {
@@ -189,7 +183,6 @@ async function main() {
   
   console.log('✅ CEO created:', admin.firstName, admin.lastName, '- Position:', admin.position);
 
-  // CTO - Chefe de TI
   const cto = await prisma.user.upsert({
     where: { email: 'cto@echotech.com' },
     update: {},
@@ -208,7 +201,6 @@ async function main() {
     },
   });
 
-  // Gerente de Desenvolvimento
   const devManager = await prisma.user.upsert({
     where: { email: 'dev.manager@echotech.com' },
     update: {},
@@ -228,7 +220,6 @@ async function main() {
     },
   });
 
-  // Desenvolvedores
   const dev1 = await prisma.user.upsert({
     where: { email: 'ana.dev@echotech.com' },
     update: {},
@@ -261,7 +252,6 @@ async function main() {
     },
   });
 
-  // Gerente de Suporte
   const supportManager = await prisma.user.upsert({
     where: { email: 'support.manager@echotech.com' },
     update: {},
@@ -281,7 +271,6 @@ async function main() {
     },
   });
 
-  // Analistas de Suporte
   const support1 = await prisma.user.upsert({
     where: { email: 'julia.support@echotech.com' },
     update: {},
@@ -298,7 +287,6 @@ async function main() {
     },
   });
 
-  // CFO - Chefe Financeiro
   const cfo = await prisma.user.upsert({
     where: { email: 'cfo@echotech.com' },
     update: {},
@@ -319,7 +307,6 @@ async function main() {
 
   console.log('✅ Users created: 9 users with hierarchy');
 
-  // Create Kanban Board
   const kanbanBoard = await prisma.kanbanBoard.create({
     data: {
       name: 'Desenvolvimento de Produto',
@@ -360,7 +347,6 @@ async function main() {
 
   console.log('✅ Kanban board created with sample cards');
 
-  // Create WhatsApp conversation
   await prisma.whatsAppConversation.upsert({
     where: { clientPhone: '+5511987654321' },
     update: {},
@@ -387,7 +373,6 @@ async function main() {
 
   console.log('✅ WhatsApp conversation created');
 
-  // Create group chat
   await prisma.chat.create({
     data: {
       name: 'Equipe de Desenvolvimento',

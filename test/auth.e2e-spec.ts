@@ -27,7 +27,6 @@ describe('AuthController (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Clean database before each test (only in test environment)
     if (process.env.NODE_ENV === 'test') {
       await prisma.cleanDatabase();
     }
@@ -35,7 +34,6 @@ describe('AuthController (e2e)', () => {
 
   describe('/api/v1/auth/register (POST)', () => {
     it('should register a new user with company', async () => {
-      // First create a company
       const company = await prisma.company.create({
         data: {
           name: 'Test Company',
@@ -75,13 +73,11 @@ describe('AuthController (e2e)', () => {
         companyId: company.id,
       };
 
-      // First registration
       await request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send(registerDto)
         .expect(201);
 
-      // Duplicate registration
       await request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send(registerDto)
@@ -118,12 +114,10 @@ describe('AuthController (e2e)', () => {
         companyId: company.id,
       };
 
-      // Register first
       await request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send(registerDto);
 
-      // Then login
       const response = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
         .send({

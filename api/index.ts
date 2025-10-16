@@ -1,18 +1,19 @@
-const { NestFactory } = require('@nestjs/core');
-const { SwaggerModule } = require('@nestjs/swagger');
-const { patchNestJsSwagger, ZodValidationPipe } = require('nestjs-zod');
-const { AppModule } = require('../dist/src/app.module');
-const { validateEnv } = require('../dist/src/config/env.validation');
-const { createLoggerConfig } = require('../dist/src/config/logger.config');
-const { createSwaggerConfig, SWAGGER_SETUP_OPTIONS } = require('../dist/src/config/swagger.config');
-const { createCorsConfig } = require('../dist/src/config/cors.config');
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule } from '@nestjs/swagger';
+import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
+import { INestApplication } from '@nestjs/common';
+import { AppModule } from '../dist/src/app.module';
+import { validateEnv } from '../dist/src/config/env.validation';
+import { createLoggerConfig } from '../dist/src/config/logger.config';
+import { createSwaggerConfig, SWAGGER_SETUP_OPTIONS } from '../dist/src/config/swagger.config';
+import { createCorsConfig } from '../dist/src/config/cors.config';
 
 const API_PREFIX = 'api/v1';
 const DOCS_PATH = 'api/docs';
 
-let cachedApp;
+let cachedApp: INestApplication | null = null;
 
-async function createApp() {
+async function createApp(): Promise<INestApplication> {
   if (cachedApp) {
     return cachedApp;
   }
@@ -27,7 +28,6 @@ async function createApp() {
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(new ZodValidationPipe());
 
-  // Setup Swagger
   patchNestJsSwagger();
   const config = createSwaggerConfig();
   const document = SwaggerModule.createDocument(app, config);
@@ -39,11 +39,9 @@ async function createApp() {
   return app;
 }
 
-module.exports = async (req, res) => {
+export default async (req: any, res: any) => {
   const app = await createApp();
   const expressApp = app.getHttpAdapter().getInstance();
   return expressApp(req, res);
 };
-
-module.exports.default = module.exports;
 

@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - The values [DEPARTMENTS,COMPANY_SETTINGS] on the enum `PermissionResource` will be removed. If these variants are still used in the database, this will fail.
-  - You are about to drop the column `isHead` on the `users` table. All the data in the column will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "SalesOpportunityPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 

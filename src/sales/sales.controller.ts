@@ -36,8 +36,6 @@ import { PermissionAction, PermissionResource } from '@prisma/client';
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
-  // ============ PIPELINE ENDPOINTS ============
-
   @Post('pipelines')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.SALES_PIPELINE })
   @ApiOperation({ summary: 'Criar novo pipeline' })
@@ -88,8 +86,6 @@ export class SalesController {
     return this.salesService.removePipeline(id);
   }
 
-  // ============ STAGE ENDPOINTS ============
-
   @Post('pipelines/:pipelineId/stages')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.SALES_PIPELINE })
   @ApiOperation({ summary: 'Criar nova etapa' })
@@ -132,8 +128,6 @@ export class SalesController {
   ) {
     return this.salesService.removeStage(id);
   }
-
-  // ============ OPPORTUNITY ENDPOINTS ============
 
   @Post('opportunities')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.SALES_OPPORTUNITIES })
@@ -191,8 +185,6 @@ export class SalesController {
     return this.salesService.removeOpportunity(id);
   }
 
-  // ============ COMMENT ENDPOINTS ============
-
   @Post('opportunities/:opportunityId/comments')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.SALES_OPPORTUNITIES })
   @ApiOperation({ summary: 'Criar comentário na oportunidade' })
@@ -227,8 +219,6 @@ export class SalesController {
   ) {
     return this.salesService.removeComment(id, userId);
   }
-
-  // ============ ACTIVITY ENDPOINTS ============
 
   @Post('opportunities/:opportunityId/activities')
   @Permissions({ action: PermissionAction.CREATE, resource: PermissionResource.SALES_OPPORTUNITIES })

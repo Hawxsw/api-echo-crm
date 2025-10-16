@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-// ============ PIPELINE SCHEMAS ============
-
 export const CreatePipelineSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().optional(),
@@ -12,8 +10,6 @@ export const UpdatePipelineSchema = z.object({
   description: z.string().optional(),
   isActive: z.boolean().optional(),
 });
-
-// ============ STAGE SCHEMAS ============
 
 export const CreateStageSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -32,8 +28,6 @@ export const UpdateStageSchema = z.object({
 export const MoveStageSchema = z.object({
   newPosition: z.number().int().min(0, 'Posição deve ser um número positivo'),
 });
-
-// ============ OPPORTUNITY SCHEMAS ============
 
 export const CreateOpportunitySchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -68,8 +62,6 @@ export const MoveOpportunitySchema = z.object({
   position: z.number().int().min(0, 'Posição deve ser um número positivo').optional(),
 });
 
-// ============ COMMENT SCHEMAS ============
-
 export const CreateCommentSchema = z.object({
   content: z.string().min(1, 'Conteúdo do comentário é obrigatório'),
   isPinned: z.boolean().optional(),
@@ -79,8 +71,6 @@ export const UpdateCommentSchema = z.object({
   content: z.string().min(1, 'Conteúdo do comentário é obrigatório').optional(),
   isPinned: z.boolean().optional(),
 });
-
-// ============ ACTIVITY SCHEMAS ============
 
 export const CreateActivitySchema = z.object({
   type: z.enum(['CALL', 'EMAIL', 'MEETING', 'TASK', 'NOTE']),
