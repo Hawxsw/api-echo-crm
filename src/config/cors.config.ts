@@ -17,26 +17,25 @@ export const createCorsConfig = (): CorsOptions => {
   console.log('Allowed origins:', allowedOrigins);
   
   return {
-    origin: true, // Temporariamente permitir todas as origens para debug
-    // origin: (origin, callback) => {
-    //   if (!origin) {
-    //     return callback(null, true);
-    //   }
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
 
-    //   const isAllowed = allowedOrigins.some((allowedOrigin) => {
-    //     if (typeof allowedOrigin === 'string') {
-    //       return allowedOrigin === origin;
-    //     }
-    //     return allowedOrigin.test(origin);
-    //   });
+      const isAllowed = allowedOrigins.some((allowedOrigin) => {
+        if (typeof allowedOrigin === 'string') {
+          return allowedOrigin === origin;
+        }
+        return allowedOrigin.test(origin);
+      });
 
-    //   if (isAllowed) {
-    //     callback(null, true);
-    //   } else {
-    //     console.warn(`CORS: Blocked origin ${origin}`);
-    //     callback(null, false);
-    //   }
-    // },
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Blocked origin ${origin}`);
+        callback(null, false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
