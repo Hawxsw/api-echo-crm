@@ -56,6 +56,6 @@ RUN pnpm prisma generate
 # Expor porta
 EXPOSE 8000
 
-# Comando de inicialização simplificado
-CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main"]
+# Comando de inicialização: iniciar app diretamente (evita bloquear healthcheck)
+CMD ["node", "dist/main"]
 
