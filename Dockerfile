@@ -36,8 +36,9 @@ WORKDIR /app
 # Copiar package.json e pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependências (incluindo Prisma CLI)
-RUN pnpm install --frozen-lockfile
+# Instalar dependências de produção + Prisma CLI
+RUN pnpm install --prod --frozen-lockfile
+RUN pnpm add prisma
 
 # Copiar arquivos necessários do builder
 COPY --from=builder /app/prisma ./prisma
@@ -50,9 +51,6 @@ ENV NODE_OPTIONS=--max-old-space-size=512
 
 # Gerar cliente Prisma na imagem de produção
 RUN pnpm prisma generate
-
-# Remover dependências de desenvolvimento após gerar Prisma
-RUN pnpm prune --prod
 
 # Criar usuário não-root para segurança
 RUN addgroup -g 1001 -S nodejs
