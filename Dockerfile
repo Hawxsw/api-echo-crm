@@ -46,7 +46,7 @@ COPY --from=builder /app/dist ./dist
 
 # Configurar variáveis de ambiente
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8000
 ENV NODE_OPTIONS=--max-old-space-size=512
 
 # Gerar cliente Prisma na imagem de produção
@@ -61,11 +61,11 @@ RUN chown -R nestjs:nodejs /app
 USER nestjs
 
 # Expor porta
-EXPOSE 3000
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:8000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Comando de inicialização
 CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main"]
