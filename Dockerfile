@@ -20,7 +20,7 @@ FROM base AS builder
 COPY . .
 
 # Gerar cliente Prisma
-RUN pnpm prisma generate
+RUN pnpm prisma generate --binary-targets linux-musl
 
 # Build da aplicação
 RUN pnpm run build
@@ -47,10 +47,9 @@ COPY --from=builder /app/dist ./dist
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NODE_OPTIONS=--max-old-space-size=512
-ENV PRISMA_CLI_BINARY_TARGETS=native,rhel-openssl-1.0.x
 
 # Gerar cliente Prisma na imagem de produção
-RUN pnpm prisma generate
+RUN pnpm prisma generate --binary-targets linux-musl
 
 # Remover dependências de desenvolvimento após gerar Prisma
 RUN pnpm prune --prod
