@@ -171,6 +171,7 @@ export class WhatsappService {
           conversation.assignedToId,
           conversation.clientName,
           conversation.id,
+          sendMessageDto.content,
         );
         this.notificationsGateway.sendNotificationToUser(conversation.assignedToId, notification);
       }

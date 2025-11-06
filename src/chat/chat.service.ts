@@ -192,6 +192,7 @@ export class ChatService {
           participantId,
           senderName,
           chatId,
+          message.content,
         );
         this.notificationsGateway.sendNotificationToUser(participantId, notification);
       })

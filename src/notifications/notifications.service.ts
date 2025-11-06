@@ -114,24 +114,24 @@ export class NotificationsService {
     });
   }
 
-  async createMessageNotification(userId: string, senderName: string, chatId: string) {
+  async createMessageNotification(userId: string, senderName: string, chatId: string, messageText?: string) {
     return this.create({
       type: NotificationType.MESSAGE,
-      title: 'Nova mensagem',
-      message: `${senderName} enviou uma mensagem`,
+      title: `${senderName} enviou uma nova mensagem`,
+      message: messageText ?? `${senderName} enviou uma mensagem`,
       userId,
-      metadata: { chatId },
+      metadata: { chatId, messageText },
       actionUrl: `/dashboard/chats`,
     });
   }
 
-  async createWhatsAppNotification(userId: string, clientName: string, conversationId: string) {
+  async createWhatsAppNotification(userId: string, clientName: string, conversationId: string, messageText?: string) {
     return this.create({
       type: NotificationType.WHATSAPP_MESSAGE,
-      title: 'Nova mensagem WhatsApp',
-      message: `${clientName} enviou uma mensagem`,
+      title: `${clientName} enviou uma nova mensagem`,
+      message: messageText ?? `${clientName} enviou uma mensagem`,
       userId,
-      metadata: { conversationId },
+      metadata: { conversationId, messageText },
       actionUrl: `/dashboard/whatsapp/${conversationId}`,
     });
   }
